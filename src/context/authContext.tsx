@@ -1,68 +1,69 @@
-'use client'
-import { cookies } from "next/headers";
-import { createContext, useContext, useState, useEffect } from "react";
+'use client';
+import AxiosInstance from '@/axios/config';
+import { RefreshTokenUrl } from '@/urls/allUrls';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface User {
-    id: number;
-    userId: string;
-    firstName: string;
-    lastName: string;
-    roles: '';
-    email: string;
-    accessToken: string;
-    isUser: boolean;
+  id: number;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  roles: string;
+  email: string;
+  isUser: boolean;
 }
 
 type AuthContextType = {
   user: User | null;
-  login: (user: any) => void;
+  isLoading: boolean;
+  login: (user: User) => void;
   logout: () => void;
 };
 
-const authContextDefaultValues: AuthContextType = {
+const AuthContext = createContext<AuthContextType>({
   user: null,
+  isLoading: true,
   login: () => {},
   logout: () => {},
-};
-
-const AuthContext = createContext<AuthContextType>(authContextDefaultValues);
+});
 
 export function useAuth() {
   return useContext(AuthContext);
 }
 
-export function AuthProvider({ children } : Readonly<{
-    children: React.ReactNode;
-  }>) {
-  const [user, setUser] = useState<User | any>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = (user: any) => {
-    setUser(user);
-    localStorage.setItem('access-token',user.accessToken);
+  const login = (userData: User) => {
+    setUser(userData);
   };
 
-  const logout = () => {
-    // Clear user data and session
-    localStorage.removeItem('access-token');
+  const logout = async () => {
     setUser(null);
   };
 
   useEffect(() => {
-    // Check for existing user session on initial render
-    const storedUser = localStorage.getItem('access-token');
-    if (storedUser) {
-      setUser(storedUser);
-    }
+    const restoreSession = async () => {
+      try {
+        const res = await AxiosInstance.post(RefreshTokenUrl, {});
+        if (res?.data) {
+          setUser(res?.data?.payload?.data);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
-  const value = {
-    user,
-    login,
-    logout,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import Search from "../components/search/page";
 
 const Layout = ({
     children
@@ -7,7 +8,7 @@ const Layout = ({
   }>) => {
   return (
     <div className="grid grid-cols-4">
-      <div className="col-span-1">a</div>
+      <div className="col-span-1"></div>
       <div className="col-span-2">{children}</div>
       <div className="col-span-1">c</div>
     </div>

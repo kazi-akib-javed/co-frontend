@@ -1,5 +1,5 @@
 "use client";
-import AxiosInstance from "@/axios/config";
+import AxiosInstance, { setAccessToken } from "@/axios/config";
 import { useAuth } from "@/context/authContext";
 import { LoginUrlGeneral } from "@/urls/allUrls";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,8 @@ const HomePage = () => {
       })
         .then((res) => {
           login(res?.data?.payload?.data);
-          alert("Successful login!");
+          setAccessToken(res?.data?.payload?.data?.accessToken);
+          console.log(res?.data);
           router.push('/dashboard')
         })
         .catch((error) => {
