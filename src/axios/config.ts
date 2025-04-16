@@ -4,9 +4,6 @@ import { publicUrls } from "../urls/publicurls";
 
 let accessToken: string | null = null;
 const BaseUrl = "localhost:4000/api";
-export const setAccessToken = (token: string) => {
-  accessToken = token;
-};
 
 // Axios instance configuration
 const AxiosInstance = axios.create({
@@ -36,17 +33,9 @@ const getCsrfTokenFromCookie = (): string | null => {
 AxiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const csrfToken = getCsrfTokenFromCookie();
-
-    // Check if the URL is excluded
-    const isExcluded = publicUrls.some((url) => config.url?.includes(url));
-
-    if (!isExcluded) {
-      if (csrfToken) {
-        config.headers["x-csrf-token"] = csrfToken;
-      }
-    }
+    accessToken = localStorage.getItem("user");
     if(accessToken) {
-      config.headers["Authorization"] = `Bearer ${accessToken}`;
+      config.headers["Authorization"] = `Bearer ${JSON.parse(accessToken).accessToken}`;
     }
     return config;
   },
@@ -76,11 +65,11 @@ AxiosInstance.interceptors.response.use(
           }
         );
         const newAccessToken = res.data.accessToken;
-        setAccessToken(newAccessToken);
-
+        console.log("New access token:", res);
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
         return AxiosInstance(originalRequest); // Retry original request
       } catch (refreshErr) {
+        localStorage.removeItem("user");
         console.error('Refresh token failed', refreshErr);
         // maybe redirect to login page here
       }

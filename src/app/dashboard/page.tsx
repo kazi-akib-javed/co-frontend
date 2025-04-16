@@ -14,22 +14,20 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [data, setData] = useState([]);
 
+  const fetchPrograms = async () => {
+    if (!user) {
+      router.replace("/");
+    }
+    try {
+      const response = await AxiosInstance.get(`${ProgramPagination}page=1&limit=10`);
+      setData(response.data.payload.data);
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
   useEffect(() => {
-    const fetchPrograms = async () => {
-      console.log(user);
-      if (!user) {
-        return;
-      }
-      try {
-        const response = await AxiosInstance.get(`${ProgramPagination}page=1&limit=10`);
-        setData(response.data.payload.data);
-      } catch (error: any) {
-        setError(error.message);
-      }
-    };
-
     fetchPrograms();
-  }, [user, router]);
+  }, []);
 
   const logOut = async () => {
     try {

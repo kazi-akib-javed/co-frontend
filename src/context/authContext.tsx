@@ -11,11 +11,13 @@ interface User {
   roles: string;
   email: string;
   isUser: boolean;
+  accessToken: string;
 }
 
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
+  isMounted: boolean;
   login: (user: User) => void;
   logout: () => void;
 };
@@ -23,6 +25,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
+  isMounted: false,
   login: () => {},
   logout: () => {},
 });
@@ -34,36 +37,28 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isMounted, setIsMounted] = useState(false);
   const login = (userData: User) => {
     setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = async () => {
     setUser(null);
+    localStorage.removeItem('user');
   };
 
   useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const res = await AxiosInstance.post(RefreshTokenUrl, {});
-        if (res?.data) {
-          setUser(res?.data?.payload?.data);
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    restoreSession();
+    const user = localStorage.getItem('user');
+    if(user){
+      setUser(JSON.parse(user));
+    }
+    setIsLoading(false);
+    setIsMounted(true); // Only render once things are fully initialized
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isMounted,isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

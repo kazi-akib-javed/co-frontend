@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/context/authContext";
+import ProtectedRoute from "@/protect-route/ProtectedRoute";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
+        <ProtectedRoute>{children}</ProtectedRoute>
       </body>
     </html>
   );

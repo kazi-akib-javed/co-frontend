@@ -1,5 +1,5 @@
 "use client";
-import AxiosInstance, { setAccessToken } from "@/axios/config";
+import AxiosInstance from "@/axios/config";
 import { useAuth } from "@/context/authContext";
 import { LoginUrlGeneral } from "@/urls/allUrls";
 import { useRouter } from "next/navigation";
@@ -36,16 +36,11 @@ const HomePage = () => {
       })
         .then((res) => {
           login(res?.data?.payload?.data);
-          setAccessToken(res?.data?.payload?.data?.accessToken);
-          console.log(res?.data);
           router.push('/dashboard')
         })
         .catch((error) => {
-          console.log(error);
           setErrorMessage(error?.message)});
     } catch (error) {
-      // Catch any network or unexpected errors
-      console.error("Login error:", error);
       setErrorMessage("An unexpected error occurred. Please try again.");
     }
   };
